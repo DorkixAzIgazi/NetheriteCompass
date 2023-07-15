@@ -1,0 +1,8 @@
+{
+  "item.netherite_compass.netherite_compass": "Netherite Compass",
+  "item.netherite_compass.netherite_compass.hint": "Use the compass to search again!",
+  "item.netherite_compass.netherite_compass.locked_on": "Ancient Debris nearby!",
+  "item.netherite_compass.netherite_compass.wrong_dim1": "The tracked Ancient Debris",
+  "item.netherite_compass.netherite_compass.wrong_dim2": "is in another dimension!",
+  "item.netherite_compass.netherite_compass.not_found": "Locating..."
+}
