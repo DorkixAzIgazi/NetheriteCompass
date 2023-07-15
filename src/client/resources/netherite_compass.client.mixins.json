@@ -1,0 +1,9 @@
+{
+  "required": true,
+  "package": "dorkix.mods.mixin.client",
+  "compatibilityLevel": "JAVA_17",
+  "client": ["NetheriteCompassClientMixin"],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

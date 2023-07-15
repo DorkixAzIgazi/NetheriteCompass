@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "netherite_compass",
+  "version": "${version}",
+  "name": "Netherite Compass",
+  "description": "Adds a Netherite compass to guide you to the nearest ancient debris.",
+  "authors": ["Dorkix"],
+  "contact": {
+    "homepage": "https://fabricmc.net/",
+    "sources": "https://github.com/DorkixAzIgazi/NetheriteCompass"
+  },
+  "license": "MIT",
+  "icon": "assets/netherite_compass/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["dorkix.mods.NetheriteCompassMod"],
+    "client": ["dorkix.mods.NetheriteCompassModClient"]
+  },
+  "mixins": [
+    "netherite_compass.mixins.json",
+    {
+      "config": "netherite_compass.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.14.21",
+    "minecraft": ">=1.20",
+    "java": ">=17",
+    "fabric-api": "*"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
+}
