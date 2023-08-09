@@ -22,7 +22,7 @@ public class NetheriteCompassModClient implements ClientModInitializer {
 		ModelPredicateProviderRegistry.register(NetheriteCompassMod.NETHERITE_COMPASS, new Identifier("angle"),
 				(stack, world, entity, i) -> {
 					var pos = NetheriteCompass.getTrackedPos(stack.getNbt());
-					if (pos == null) {
+					if (pos == null && world != null) {
 						return getSpinningAngle(world);
 					}
 
