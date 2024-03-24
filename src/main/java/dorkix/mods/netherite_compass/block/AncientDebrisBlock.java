@@ -1,5 +1,7 @@
 package dorkix.mods.netherite_compass.block;
 
+import com.mojang.serialization.MapCodec;
+
 import dorkix.mods.netherite_compass.blockentity.AncientDebrisBlockEntity;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
@@ -21,6 +23,11 @@ public class AncientDebrisBlock extends BlockWithEntity {
     @Override
     public BlockRenderType getRenderType(BlockState state) {
         return BlockRenderType.MODEL;
+    }
+
+    @Override
+    protected MapCodec<? extends BlockWithEntity> getCodec() {
+        throw new UnsupportedOperationException("Unimplemented method 'getCodec'");
     }
 
 }
