@@ -9,7 +9,7 @@ import net.minecraft.util.Identifier;
 
 public class NetheriteCompassModClient implements ClientModInitializer {
 	CompassAnglePredicateProvider ANGLE_DELEGATE = new CompassAnglePredicateProvider((world, stack, entity) -> {
-		return NetheriteCompass.getTrackedPos(stack.getNbt());
+		return NetheriteCompass.getTrackedPos(stack);
 	});
 
 	private static float getSpinningAngle(ClientWorld world) {
@@ -19,9 +19,9 @@ public class NetheriteCompassModClient implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
-		ModelPredicateProviderRegistry.register(NetheriteCompassMod.NETHERITE_COMPASS, new Identifier("angle"),
+		ModelPredicateProviderRegistry.register(NetheriteCompassMod.NETHERITE_COMPASS, Identifier.of("angle"),
 				(stack, world, entity, i) -> {
-					var pos = NetheriteCompass.getTrackedPos(stack.getNbt());
+					var pos = NetheriteCompass.getTrackedPos(stack);
 					if (pos == null && world != null) {
 						return getSpinningAngle(world);
 					}
