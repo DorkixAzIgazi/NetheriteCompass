@@ -11,18 +11,20 @@ import org.jetbrains.annotations.Nullable;
 
 import dorkix.mods.NetheriteCompassMod;
 import dorkix.mods.netherite_compass.blockentity.AncientDebrisBlockEntity;
-import net.minecraft.client.item.TooltipContext;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
@@ -38,7 +40,14 @@ public class NetheriteCompass extends Item {
     public static final String ANCIENT_DEBRIS_TRACKED_KEY = "AncientDebrisTracked";
 
     @Nullable
-    public static GlobalPos getTrackedPos(NbtCompound nbt) {
+    public static GlobalPos getTrackedPos(ItemStack stack) {
+
+        var nbtComponent = stack.get(DataComponentTypes.CUSTOM_DATA);
+        if (nbtComponent == null) {
+            return null;
+        }
+
+        var nbt = nbtComponent.copyNbt();
 
         if (nbt == null)
             return null;
@@ -53,8 +62,8 @@ public class NetheriteCompass extends Item {
         boolean hasPosKey = nbt.contains(ANCIENT_DEBRIS_POS_KEY);
         boolean hasDimKey = nbt.contains(ANCIENT_DEBRIS_DIMENSION_KEY);
 
-        if (hasPosKey && hasDimKey && tracked && (worldKey = getTrackedDimension(nbt)).isPresent()) {
-            BlockPos blockPos = NbtHelper.toBlockPos(nbt.getCompound(ANCIENT_DEBRIS_POS_KEY));
+        if (hasPosKey && hasDimKey && tracked && (worldKey = getTrackedDimension(stack)).isPresent()) {
+            BlockPos blockPos = NbtHelper.toBlockPos(nbt, ANCIENT_DEBRIS_POS_KEY).get();
             return GlobalPos.create(worldKey.get(), blockPos);
         }
         return null;
@@ -65,11 +74,12 @@ public class NetheriteCompass extends Item {
             return Optional.empty();
         }
         // See if the nbt data for the item has a tracked position
-        var trackedPos = getTrackedPos(stack.getNbt());
+        var trackedPos = getTrackedPos(stack);
+        setTooltip(stack, world);
         if (!force && trackedPos != null) {
             // If its not a forced search triggered by the use the compass then check if the
             // position from the nbt still contains the Ancient Debris Block entity.
-            Optional<AncientDebrisBlockEntity> trackedEntity = world.getBlockEntity(trackedPos.getPos(),
+            Optional<AncientDebrisBlockEntity> trackedEntity = world.getBlockEntity(trackedPos.pos(),
                     NetheriteCompassMod.ANCIENT_DEBRIS_BLOCK_ENTITY);
 
             // If it still exist don't start the search.
@@ -77,12 +87,13 @@ public class NetheriteCompass extends Item {
             // broken) but the user can trigger a new search for the closest ancient Debris
             // by right clicking the compass.
             if (!trackedEntity.isEmpty()) {
-                return Optional.of(trackedPos.getPos());
+                return Optional.of(trackedPos.pos());
             } else {
                 // Check if the tracked pos is in the same dimension as the entity holding the
                 // compass. trackedEntity might be null because of this. If this is the case
                 // just ignore and don't search again.
-                var dimKey = getTrackedDimension(stack.getNbt());
+                setTooltip(stack, world);
+                var dimKey = getTrackedDimension(stack);
                 if (dimKey.isPresent()
                         && !dimKey.get().toString().equals(entity.getWorld().getRegistryKey().toString())) {
                     return Optional.empty();
@@ -95,18 +106,23 @@ public class NetheriteCompass extends Item {
         // Ancient Debris.
 
         Optional<BlockPos> closest = findAncientDebrisInNearbyChunks(world, entPos, 1);
-
         // Play sound if the tracking state changes
         playSoundOnStateChange(world, entity, stack, closest);
 
         // Save the result into the item's nbt data. writeNbt will handle the case if no
         // Ancient Debris has been found.
-        writeNbt(world.getRegistryKey(), closest, stack.getOrCreateNbt());
-
+        writeNbt(stack, world.getRegistryKey(), closest);
+        setTooltip(stack, world);
         return closest;
     }
 
-    private static Optional<RegistryKey<World>> getTrackedDimension(NbtCompound nbt) {
+    private static Optional<RegistryKey<World>> getTrackedDimension(ItemStack stack) {
+        var nbtComponent = stack.get(DataComponentTypes.CUSTOM_DATA);
+        if (nbtComponent == null) {
+            return null;
+        }
+
+        var nbt = nbtComponent.copyNbt();
         return World.CODEC.parse(NbtOps.INSTANCE, nbt.get(ANCIENT_DEBRIS_DIMENSION_KEY)).result();
     }
 
@@ -116,16 +132,17 @@ public class NetheriteCompass extends Item {
             playSound(world, entity, true);
             return;
         }
-        var trackedPos = getTrackedPos(stack.getNbt());
+        var trackedPos = getTrackedPos(stack);
         if (!closest.isPresent() && trackedPos != null) {
             playSound(world, entity, false);
         }
     }
 
-    private static void writeNbt(RegistryKey<World> worldKey, Optional<BlockPos> closest, NbtCompound nbt) {
-        if (nbt == null) {
-            return;
-        }
+    private static void writeNbt(ItemStack itemStack, RegistryKey<World> worldKey, Optional<BlockPos> closest) {
+        var nbtComponent = itemStack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT);
+
+        var nbt = nbtComponent.copyNbt();
+
         if (closest.isPresent()) {
             BlockPos pos = closest.get();
             nbt.put(ANCIENT_DEBRIS_POS_KEY, NbtHelper.fromBlockPos(pos));
@@ -138,6 +155,8 @@ public class NetheriteCompass extends Item {
             nbt.putBoolean(ANCIENT_DEBRIS_TRACKED_KEY, false);
             nbt.remove(ANCIENT_DEBRIS_DIMENSION_KEY);
         }
+
+        itemStack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
 
     }
 
@@ -208,35 +227,50 @@ public class NetheriteCompass extends Item {
         return TypedActionResult.success(user.getStackInHand(hand));
     }
 
-    @Override
-    public void appendTooltip(ItemStack itemStack, World world, List<Text> tooltip, TooltipContext tooltipContext) {
-        if (tooltipContext.isCreative()) {
-            return;
-        }
-        if (getTrackedPos(itemStack.getNbt()) != null) {
+    public static void setTooltip(ItemStack itemStack, World world) {
+        if (getTrackedPos(itemStack) != null) {
             // Hint for new search
-            tooltip.add(
-                    Text.translatable("item.netherite_compass.netherite_compass.hint").formatted(Formatting.GRAY));
-            var dimKey = getTrackedDimension(itemStack.getNbt());
-            if (dimKey.isPresent() && !dimKey.get().toString().equals(world.getRegistryKey().toString())) {
+            var dimKey = getTrackedDimension(itemStack);
+            if (dimKey.isPresent() &&
+                    !dimKey.get().toString().equals(world.getRegistryKey().toString())) {
                 // Tracked in other dimension
-                tooltip.add(
-                        Text.translatable("item.netherite_compass.netherite_compass.wrong_dim1")
-                                .formatted(Formatting.DARK_RED).formatted(Formatting.BOLD));
-                tooltip.add(
-                        Text.translatable("item.netherite_compass.netherite_compass.wrong_dim2")
-                                .formatted(Formatting.DARK_RED).formatted(Formatting.BOLD));
+                setWrongDimensionLore(itemStack);
             } else {
                 // Tracked nearby
-                tooltip.add(
-                        Text.translatable("item.netherite_compass.netherite_compass.locked_on")
-                                .formatted(Formatting.RED));
+                setLockedOnLore(itemStack);
             }
 
-        } else if (itemStack.getNbt() != null) {
-            tooltip.add(Text.translatable("item.netherite_compass.netherite_compass.not_found")
-                    .formatted(Formatting.DARK_PURPLE));
+        } else if (itemStack.get(DataComponentTypes.CUSTOM_DATA) != null) {
+            setLocatingLore(itemStack);
         }
+    }
+
+    public static Text getHintText() {
+        return Text.translatable("item.netherite_compass.netherite_compass.hint")
+                .setStyle(Style.EMPTY.withItalic(false).withBold(false).withColor(Formatting.GRAY));
+    }
+
+    public static void setWrongDimensionLore(ItemStack stack) {
+        stack.set(DataComponentTypes.LORE,
+                new LoreComponent(List.of(getHintText(),
+                        Text.translatable("item.netherite_compass.netherite_compass.wrong_dim1")
+                                .setStyle(Style.EMPTY.withItalic(false).withBold(true).withColor(Formatting.DARK_RED)),
+                        Text.translatable("item.netherite_compass.netherite_compass.wrong_dim2")
+                                .setStyle(
+                                        Style.EMPTY.withItalic(false).withBold(true).withColor(Formatting.DARK_RED)))));
+    }
+
+    public static void setLockedOnLore(ItemStack stack) {
+        stack.set(DataComponentTypes.LORE,
+                new LoreComponent(
+                        List.of(getHintText(), Text.translatable("item.netherite_compass.netherite_compass.locked_on")
+                                .setStyle(Style.EMPTY.withItalic(false).withBold(false).withColor(Formatting.RED)))));
+    }
+
+    public static void setLocatingLore(ItemStack stack) {
+        stack.set(DataComponentTypes.LORE,
+                new LoreComponent(List.of(Text.translatable("item.netherite_compass.netherite_compass.not_found")
+                        .setStyle(Style.EMPTY.withItalic(false).withBold(false).withColor(Formatting.DARK_PURPLE)))));
     }
 
     @Override
