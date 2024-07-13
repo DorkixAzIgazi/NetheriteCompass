@@ -1,16 +1,13 @@
 package dorkix.mods.netherite_compass.item;
 
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.jetbrains.annotations.Nullable;
 
 import dorkix.mods.NetheriteCompassMod;
-import dorkix.mods.netherite_compass.blockentity.AncientDebrisBlockEntity;
+import net.minecraft.block.Blocks;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LoreComponent;
 import net.minecraft.component.type.NbtComponent;
@@ -78,15 +75,14 @@ public class NetheriteCompass extends Item {
         setTooltip(stack, world);
         if (!force && trackedPos != null) {
             // If its not a forced search triggered by the use the compass then check if the
-            // position from the nbt still contains the Ancient Debris Block entity.
-            Optional<AncientDebrisBlockEntity> trackedEntity = world.getBlockEntity(trackedPos.pos(),
-                    NetheriteCompassMod.ANCIENT_DEBRIS_BLOCK_ENTITY);
+            // position from the nbt still contains the Ancient Debris Block.
+            var trackedBlock = world.getBlockState(trackedPos.pos());
 
             // If it still exist don't start the search.
             // This will result in permanently locking onto one entity (until the Debris is
             // broken) but the user can trigger a new search for the closest ancient Debris
             // by right clicking the compass.
-            if (!trackedEntity.isEmpty()) {
+            if (trackedBlock.getBlock() == Blocks.ANCIENT_DEBRIS) {
                 return Optional.of(trackedPos.pos());
             } else {
                 // Check if the tracked pos is in the same dimension as the entity holding the
@@ -176,32 +172,34 @@ public class NetheriteCompass extends Item {
     private static Optional<BlockPos> findAncientDebrisInNearbyChunks(World world, BlockPos entPos,
             int chunkRadius) {
         chunkRadius = Math.max(0, chunkRadius);
-        Map<BlockPos, AncientDebrisBlockEntity> entities = new HashMap<>();
+        HashSet<BlockPos> blocks = new HashSet<>();
         var chunkPos = world.getWorldChunk(entPos).getPos();
 
         for (int x = chunkPos.x - chunkRadius; x <= chunkPos.x + chunkRadius; x++) {
             for (int z = chunkPos.z - chunkRadius; z <= chunkPos.z + chunkRadius; z++) {
-                entities.putAll(world.getChunk(x, z).getBlockEntities().entrySet().stream()
-                        // only want the Ancient Debris entities
-                        .filter(entry -> entry.getValue() instanceof AncientDebrisBlockEntity)
-                        .collect(Collectors.toMap(entry -> entry.getKey(),
-                                entry -> (AncientDebrisBlockEntity) entry.getValue())));
+                world.getChunk(x, z).forEachBlockMatchingPredicate(
+                        blockState -> blockState.getBlock() == Blocks.ANCIENT_DEBRIS,
+                        (pos, blockState) -> {
+                            // copy values as the pos given by the lamba is mutable and will change the
+                            // reference during the block filtering
+                            blocks.add(BlockPos.ofFloored(pos.getX(), pos.getY(), pos.getZ()));
+                        });
             }
         }
-        return getClosestBlockPos(entities, entPos);
+        return getClosestBlockPos(blocks, entPos);
     }
 
-    private static Optional<BlockPos> getClosestBlockPos(Map<BlockPos, AncientDebrisBlockEntity> entities,
+    private static Optional<BlockPos> getClosestBlockPos(HashSet<BlockPos> blocks,
             BlockPos entPos) {
-        Optional<Entry<BlockPos, AncientDebrisBlockEntity>> min = entities.entrySet().stream()
+        var min = blocks.stream()
                 // comparator lambda to see if the first entry is closer than the second
                 .min((entry1, entry2) -> {
-                    double dist1 = GetDistance(entPos, entry1.getKey());
-                    double dist2 = GetDistance(entPos, entry2.getKey());
+                    double dist1 = GetDistance(entPos, entry1);
+                    double dist2 = GetDistance(entPos, entry2);
                     return dist1 < dist2 ? -1 : dist1 > dist2 ? 1 : 0;
                 });
 
-        return min.isPresent() ? Optional.of(min.get().getKey()) : Optional.empty();
+        return min.isPresent() ? Optional.of(min.get()) : Optional.empty();
     }
 
     private static double GetDistance(BlockPos playerPos, BlockPos entityPos) {
