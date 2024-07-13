@@ -2,7 +2,7 @@
   "required": true,
   "package": "dorkix.mods.mixin",
   "compatibilityLevel": "JAVA_21",
-  "mixins": ["NetheriteCompassMixin", "BlocksMixin"],
+  "mixins": ["NetheriteCompassMixin"],
   "injectors": {
     "defaultRequire": 1
   }
