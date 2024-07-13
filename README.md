@@ -37,7 +37,7 @@ If you go to another dimension and your compass is locked onto an Ancient Debris
 
 #### Using the compass:
 
-When you right click the compass it will try to search for a new target if it already had one. This action will give you a five second cooldown before you can use it again (just like the ender pearl when thrown). 
+When you right click the compass it will try to search for a new target if it already had one. This action will give you a five second cooldown before you can use it again (just like the ender pearl when thrown).
 
 #### Droped and Item frames
 
@@ -55,10 +55,6 @@ It is a very powerful tool for locating Ancient Debris so I didn't wanted to mak
 
 The compass will not show height offcourse, just like the others already in game, but it is already powerful enough so it probably don't need to.
 
-#### Technical stuff
-
-The mod will turn the Ancient Debris block into a Block entity (like a chest or furnace). Altought this sounds strange, it does not affect its behaviour in any way, but helps the mod perform much better as it only needs to look at block entities in the chunk not all blocks. Minecraft's code already handles block entities differently than blocks, the mod only filters for a certain type (Ancient Debris) and finds the clossest one to the player.
-
 ### Loading worlds without the mod
 
 If you **load up a world without the mod**, which you previously used it with, only the compass will disappear, the **Ancient Debris Blocks will not be affected, they won't disappear from your world**.
@@ -67,7 +63,7 @@ If you **load up a world without the mod**, which you previously used it with, o
 
 #### Prerequisites
 
-- Java 17 or above
+- Java 21 or above
 
 #### Compiling
 
