@@ -1,27 +1,15 @@
 {
-  "type": "minecraft:crafting_shaped",
-  "category": "equipment",
-  "pattern": ["###", "NCN", "nRn"],
-  "key": {
-    "#": {
-      "item": "minecraft:magma_block"
-    },
-    "N": {
-      "item": "minecraft:netherite_scrap"
-    },
-    "C": {
-      "item": "minecraft:compass"
-    },
-    "n": {
-      "item": "minecraft:netherite_ingot"
-    },
-    "R": {
-      "item": "minecraft:netherite_block"
-    }
+  "type": "minecraft:smithing_transform",
+  "base": {
+    "item": "minecraft:recovery_compass"
+  },
+  "template": {
+    "item": "minecraft:netherite_upgrade_smithing_template"
+  },
+  "addition": {
+    "item": "minecraft:netherite_ingot"
   },
   "result": {
-    "id": "netherite_compass:netherite_compass",
-    "count": 1
-  },
-  "show_notification": true
+    "id": "netherite_compass:netherite_compass"
+  }
 }
