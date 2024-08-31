@@ -271,17 +271,22 @@ public class NetheriteCompassItem extends Item {
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+        var stack = player.getItemInHand(hand);
         if (level.isClientSide) {
-            return InteractionResultHolder.success(player.getItemInHand(hand));
+            return InteractionResultHolder.pass(stack);
         }
+        if (!stack.is(NetheriteCompass.NETHERITE_COMPASS_ITEM.get())) {
+            return InteractionResultHolder.pass(stack);
+        }
+
         player.getCooldowns().addCooldown(this, 100);
         // we can only modify the item stack on the server, ignore the client world
         // call.
-        var pos = findAncientDebris(player.getMainHandItem(), level, player, true);
+        var pos = findAncientDebris(stack, level, player, true);
         // play the correct sound depending on the result
         playSound(level, player, pos.isPresent());
 
-        return InteractionResultHolder.success(player.getItemInHand(hand));
+        return InteractionResultHolder.success(stack);
     }
 
 }
