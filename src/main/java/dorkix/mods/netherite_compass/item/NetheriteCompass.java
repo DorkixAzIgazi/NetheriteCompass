@@ -23,9 +23,9 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.GlobalPos;
 import net.minecraft.world.World;
@@ -211,23 +211,23 @@ public class NetheriteCompass extends Item {
     }
 
     @Override
-    public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
+    public ActionResult use(World world, PlayerEntity user, Hand hand) {
         var stack = user.getStackInHand(hand);
         if (world.isClient) {
-            return TypedActionResult.pass(stack);
+            return ActionResult.PASS;
         }
         if (!stack.isOf(NetheriteCompassMod.NETHERITE_COMPASS)) {
-            return TypedActionResult.pass(stack);
+            return ActionResult.PASS;
         }
 
-        user.getItemCooldownManager().set(this, 100);
+        user.getItemCooldownManager().set(stack, 100);
         // we can only modify the item stack on the server, ignore the client world
         // call.
         var pos = findAncientDebris(stack, world, user, true);
         // play the correct sound depending on the result
         playSound(world, user, pos.isPresent());
 
-        return TypedActionResult.success(stack);
+        return ActionResult.SUCCESS.withNewHandStack(stack);
     }
 
     public static void setTooltip(ItemStack itemStack, World world) {
