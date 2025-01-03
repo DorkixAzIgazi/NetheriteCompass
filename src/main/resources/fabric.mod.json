@@ -14,7 +14,8 @@
   "environment": "*",
   "entrypoints": {
     "main": ["dorkix.mods.NetheriteCompassMod"],
-    "client": ["dorkix.mods.NetheriteCompassModClient"]
+    "client": ["dorkix.mods.NetheriteCompassModClient"],
+    "fabric-datagen": ["dorkix.mods.NetheriteCompassModDataGenerator"]
   },
   "mixins": [
     "netherite_compass.mixins.json",
@@ -25,7 +26,7 @@
   ],
   "depends": {
     "fabricloader": ">=0.16.9",
-    "minecraft": "~1.21.3",
+    "minecraft": "~1.21.4",
     "java": ">=21",
     "fabric-api": "*"
   },

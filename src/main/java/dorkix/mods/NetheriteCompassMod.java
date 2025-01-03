@@ -3,11 +3,13 @@ package dorkix.mods;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import dorkix.mods.components.DebrisTrackingComponent;
 import dorkix.mods.netherite_compass.Constants;
 import dorkix.mods.netherite_compass.item.NetheriteCompass;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.minecraft.component.ComponentType;
 import net.minecraft.item.Item;
 import net.minecraft.item.Item.Settings;
 import net.minecraft.item.ItemGroup;
@@ -23,10 +25,17 @@ import net.minecraft.util.Rarity;
 public class NetheriteCompassMod implements ModInitializer {
 	public static final Logger LOGGER = LoggerFactory.getLogger(Constants.MODID);
 
+	public static final ComponentType<DebrisTrackingComponent> DEBRIS_TRACKING_COMPONENT = Registry.register(
+			Registries.DATA_COMPONENT_TYPE,
+			Identifier.of(Constants.MODID, "tracked_debris"),
+			ComponentType.<DebrisTrackingComponent>builder().codec(DebrisTrackingComponent.CODEC).build());
+
 	public static final RegistryKey<Item> NETHERITE_COMPASS_KEY = RegistryKey.of(RegistryKeys.ITEM,
 			Identifier.of(Constants.MODID, "netherite_compass"));
+
 	public static final Item NETHERITE_COMPASS = new NetheriteCompass(
-			new Settings().rarity(Rarity.EPIC).fireproof().maxCount(1).registryKey(NETHERITE_COMPASS_KEY));
+			new Settings().rarity(Rarity.EPIC).fireproof().maxCount(1).registryKey(NETHERITE_COMPASS_KEY)
+					.component(DEBRIS_TRACKING_COMPONENT, DebrisTrackingComponent.DEFAULT));
 
 	public static final RegistryKey<ItemGroup> NETHERITE_COMPASS_GROUP_KEY = RegistryKey.of(
 			Registries.ITEM_GROUP.getKey(), Identifier.of(Constants.MODID, "item_group"));
