@@ -15,6 +15,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
@@ -22,8 +23,13 @@ import net.minecraft.util.Rarity;
 public class NetheriteCompassMod implements ModInitializer {
 	public static final Logger LOGGER = LoggerFactory.getLogger(Constants.MODID);
 
+	public static final RegistryKey<Item> NETHERITE_COMPASS_KEY = RegistryKey.of(RegistryKeys.ITEM,
+			Identifier.of(Constants.MODID, "netherite_compass"));
 	public static final Item NETHERITE_COMPASS = new NetheriteCompass(
-			new Settings().rarity(Rarity.EPIC).fireproof().maxCount(1));
+			new Settings().rarity(Rarity.EPIC).fireproof().maxCount(1).registryKey(NETHERITE_COMPASS_KEY));
+
+	public static final RegistryKey<ItemGroup> NETHERITE_COMPASS_GROUP_KEY = RegistryKey.of(
+			Registries.ITEM_GROUP.getKey(), Identifier.of(Constants.MODID, "item_group"));
 
 	public static final ItemGroup NETHERITE_COMPASS_GROUP = FabricItemGroup.builder()
 			.icon(() -> new ItemStack(NETHERITE_COMPASS))
@@ -32,14 +38,12 @@ public class NetheriteCompassMod implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		Registry.register(Registries.ITEM, Identifier.of(Constants.MODID, "netherite_compass"), NETHERITE_COMPASS);
 
-		var netheriteCompassGroupId = Identifier.of(Constants.MODID, "item_group");
+		Registry.register(Registries.ITEM, NETHERITE_COMPASS_KEY, NETHERITE_COMPASS);
 
-		Registry.register(Registries.ITEM_GROUP, netheriteCompassGroupId, NETHERITE_COMPASS_GROUP);
-		var reg = RegistryKey.of(Registries.ITEM_GROUP.getKey(), netheriteCompassGroupId);
+		Registry.register(Registries.ITEM_GROUP, NETHERITE_COMPASS_GROUP_KEY, NETHERITE_COMPASS_GROUP);
 
-		ItemGroupEvents.modifyEntriesEvent(reg).register(content -> {
+		ItemGroupEvents.modifyEntriesEvent(NETHERITE_COMPASS_GROUP_KEY).register(content -> {
 			content.add(NETHERITE_COMPASS);
 		});
 	}
