@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.item.CompassItemPropertyFunction;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
@@ -31,9 +32,14 @@ public class NetheriteCompass {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister
             .create(Registries.CREATIVE_MODE_TAB, MODID);
 
+    public static final ResourceKey<Item> NETHERITE_COMPASS_KEY = ResourceKey.create(Registries.ITEM,
+            ResourceLocation.fromNamespaceAndPath(MODID, "netherite_compass"));
+
     public static final RegistryObject<Item> NETHERITE_COMPASS_ITEM = ITEMS.register(
             "netherite_compass",
-            () -> new NetheriteCompassItem(new Item.Properties().rarity(Rarity.EPIC).fireResistant().stacksTo(1)));
+            () -> new NetheriteCompassItem(
+                    new Item.Properties().rarity(Rarity.EPIC).fireResistant().stacksTo(1)
+                            .setId(NETHERITE_COMPASS_KEY)));
 
     public static final RegistryObject<CreativeModeTab> NETHERITE_COMPASS_TAB = CREATIVE_MODE_TABS.register(
             "netherite_compass_tab",
@@ -45,8 +51,8 @@ public class NetheriteCompass {
                         output.accept(NETHERITE_COMPASS_ITEM.get());
                     }).build());
 
-    public NetheriteCompass() {
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+    public NetheriteCompass(FMLJavaModLoadingContext context) {
+        IEventBus modEventBus = context.getModEventBus();
 
         modEventBus.addListener(this::clientSetup);
         ITEMS.register(modEventBus);
