@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
+import io.dorkix.netherite_compass.DebrisTrackingComponent;
 import io.dorkix.netherite_compass.NetheriteCompass;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -40,29 +41,11 @@ public class NetheriteCompassItem extends Item {
     }
 
     public static GlobalPos getTrackedPos(ItemStack stack) {
-        var nbtComponent = stack.get(DataComponents.CUSTOM_DATA);
-        if (nbtComponent == null) {
-            return null;
-        }
+        var trackingComponent = stack.getOrDefault(NetheriteCompass.DEBRIS_TRACKING_COMPONENT.get(),
+                DebrisTrackingComponent.DEFAULT);
 
-        var nbt = nbtComponent.copyTag();
-
-        if (nbt == null)
-            return null;
-
-        boolean hasTrackedValue = nbt.contains(ANCIENT_DEBRIS_TRACKED_KEY);
-        if (!hasTrackedValue) {
-            return null;
-        }
-        boolean tracked = nbt.getBoolean(ANCIENT_DEBRIS_TRACKED_KEY);
-
-        Optional<ResourceKey<Level>> worldKey;
-        boolean hasPosKey = nbt.contains(ANCIENT_DEBRIS_POS_KEY);
-        boolean hasDimKey = nbt.contains(ANCIENT_DEBRIS_DIMENSION_KEY);
-
-        if (hasPosKey && hasDimKey && tracked && (worldKey = getTrackedDimension(stack)).isPresent()) {
-            BlockPos blockPos = NbtUtils.readBlockPos(nbt, ANCIENT_DEBRIS_POS_KEY).get();
-            return GlobalPos.of(worldKey.get(), blockPos);
+        if (trackingComponent.isTracking() && trackingComponent.target().isPresent()) {
+            return trackingComponent.target().get();
         }
         return null;
     }
@@ -71,12 +54,12 @@ public class NetheriteCompassItem extends Item {
         if (level.isClientSide) {
             return Optional.empty();
         }
-        // See if the nbt data for the item has a tracked position
+        // See if the component data for the item has a tracked position
         var trackedPos = getTrackedPos(stack);
         setTooltip(stack, level);
         if (!force && trackedPos != null) {
-            // If its not a forced search triggered by the use the compass then check if the
-            // position from the nbt still contains the Ancient Debris Block.
+            // If its not a forced search triggered by the use of the compass then check if
+            // the position from the component still contains the Ancient Debris Block.
             var trackedBlock = level.getBlockState(trackedPos.pos());
 
             // If it still exist don't start the search.
@@ -93,35 +76,35 @@ public class NetheriteCompassItem extends Item {
                 setTooltip(stack, level);
                 var dimKey = getTrackedDimension(stack);
                 if (dimKey.isPresent()
-                        && !dimKey.get().toString().equals(entity.level().dimension().toString())) {
+                        && !(dimKey.get() == entity.level().dimension())) {
                     return Optional.empty();
                 }
             }
         }
 
         BlockPos entPos = entity.blockPosition();
-        // Get all the block entities in the player's nearby chunks and find the closest
-        // Ancient Debris.
+        // Get all the blocks in the player's nearby chunks and find the
+        // closest Ancient Debris.
 
         Optional<BlockPos> closest = findAncientDebrisInNearbyChunks(level, entPos, 1);
         // Play sound if the tracking state changes
         playSoundOnStateChange(level, entity, stack, closest);
 
-        // Save the result into the item's nbt data. writeNbt will handle the case if no
-        // Ancient Debris has been found.
-        writeNbt(stack, level.dimension(), closest);
+        // Save the result into the item's component data. writeComponent will handle
+        // the case if no Ancient Debris has been found.
+        writeComponent(stack, level.dimension(), closest);
         setTooltip(stack, level);
         return closest;
     }
 
     private static Optional<ResourceKey<Level>> getTrackedDimension(ItemStack stack) {
-        var nbtComponent = stack.get(DataComponents.CUSTOM_DATA);
-        if (nbtComponent == null) {
-            return null;
-        }
+        var trackingComponent = stack.getOrDefault(NetheriteCompass.DEBRIS_TRACKING_COMPONENT.get(),
+                DebrisTrackingComponent.DEFAULT);
 
-        var nbt = nbtComponent.copyTag();
-        return Level.RESOURCE_KEY_CODEC.parse(NbtOps.INSTANCE, nbt.get(ANCIENT_DEBRIS_DIMENSION_KEY)).result();
+        if (trackingComponent.isTracking() && trackingComponent.target().isPresent()) {
+            return Optional.of(trackingComponent.target().get().dimension());
+        }
+        return Optional.empty();
     }
 
     private static void playSoundOnStateChange(Level level, Entity entity, ItemStack stack,
@@ -136,26 +119,14 @@ public class NetheriteCompassItem extends Item {
         }
     }
 
-    private static void writeNbt(ItemStack itemStack, ResourceKey<Level> levelKey, Optional<BlockPos> closest) {
-        var nbtComponent = itemStack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
-
-        var nbt = nbtComponent.copyTag();
-
+    private static void writeComponent(ItemStack itemStack, ResourceKey<Level> levelKey, Optional<BlockPos> closest) {
         if (closest.isPresent()) {
-            BlockPos pos = closest.get();
-            nbt.put(ANCIENT_DEBRIS_POS_KEY, NbtUtils.writeBlockPos(pos));
-            Level.RESOURCE_KEY_CODEC.encodeStart(NbtOps.INSTANCE, levelKey)
-                    .resultOrPartial(NetheriteCompass.LOGGER::error)
-                    .ifPresent(nbtElement -> nbt.put(ANCIENT_DEBRIS_DIMENSION_KEY, (Tag) nbtElement));
-            nbt.putBoolean(ANCIENT_DEBRIS_TRACKED_KEY, true);
+            itemStack.set(NetheriteCompass.DEBRIS_TRACKING_COMPONENT.get(),
+                    new DebrisTrackingComponent(true, Optional.of(GlobalPos.of(levelKey, closest.get()))));
         } else {
-            nbt.put(ANCIENT_DEBRIS_POS_KEY, NbtUtils.writeBlockPos(BlockPos.ZERO));
-            nbt.putBoolean(ANCIENT_DEBRIS_TRACKED_KEY, false);
-            nbt.remove(ANCIENT_DEBRIS_DIMENSION_KEY);
+            itemStack.set(NetheriteCompass.DEBRIS_TRACKING_COMPONENT.get(),
+                    DebrisTrackingComponent.DEFAULT);
         }
-
-        itemStack.set(DataComponents.CUSTOM_DATA, CustomData.of(nbt));
-
     }
 
     private static void playSound(Level level, Entity entity, boolean success) {
@@ -208,11 +179,13 @@ public class NetheriteCompassItem extends Item {
     }
 
     public static void setTooltip(ItemStack itemStack, Level level) {
+        var trackingComponent = itemStack.getOrDefault(NetheriteCompass.DEBRIS_TRACKING_COMPONENT.get(),
+                DebrisTrackingComponent.DEFAULT);
         if (getTrackedPos(itemStack) != null) {
             // Hint for new search
             var dimKey = getTrackedDimension(itemStack);
             if (dimKey.isPresent() &&
-                    !dimKey.get().toString().equals(level.dimension().toString())) {
+                    !(dimKey.get() == level.dimension())) {
                 // Tracked in other dimension
                 setWrongDimensionLore(itemStack);
             } else {
@@ -220,7 +193,7 @@ public class NetheriteCompassItem extends Item {
                 setLockedOnLore(itemStack);
             }
 
-        } else if (itemStack.get(DataComponents.CUSTOM_DATA) != null) {
+        } else if (!trackingComponent.isTracking()) {
             setLocatingLore(itemStack);
         }
     }
