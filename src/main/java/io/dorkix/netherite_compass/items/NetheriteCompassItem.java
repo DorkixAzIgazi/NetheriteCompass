@@ -19,7 +19,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -270,23 +270,22 @@ public class NetheriteCompassItem extends Item {
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+    public InteractionResult use(Level level, Player player, InteractionHand hand) {
         var stack = player.getItemInHand(hand);
         if (level.isClientSide) {
-            return InteractionResultHolder.pass(stack);
+            return InteractionResult.PASS;
         }
         if (!stack.is(NetheriteCompass.NETHERITE_COMPASS_ITEM.get())) {
-            return InteractionResultHolder.pass(stack);
+            return InteractionResult.PASS;
         }
 
-        player.getCooldowns().addCooldown(this, 100);
+        player.getCooldowns().addCooldown(stack, 100);
         // we can only modify the item stack on the server, ignore the client world
         // call.
         var pos = findAncientDebris(stack, level, player, true);
         // play the correct sound depending on the result
         playSound(level, player, pos.isPresent());
 
-        return InteractionResultHolder.success(stack);
+        return InteractionResult.SUCCESS.heldItemTransformedTo(stack);
     }
-
 }
