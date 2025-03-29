@@ -15,7 +15,8 @@
   "entrypoints": {
     "main": ["dorkix.mods.NetheriteCompassMod"],
     "client": ["dorkix.mods.NetheriteCompassModClient"],
-    "fabric-datagen": ["dorkix.mods.NetheriteCompassModDataGenerator"]
+    "fabric-datagen": ["dorkix.mods.NetheriteCompassModDataGenerator"],
+    "modmenu": ["dorkix.mods.config.ModMenuIntegration"]
   },
   "mixins": [
     "netherite_compass.mixins.json",
@@ -25,12 +26,17 @@
     }
   ],
   "depends": {
-    "fabricloader": ">=0.16.9",
-    "minecraft": "~1.21.4",
+    "fabricloader": ">=0.16.10",
+    "minecraft": "~1.21.5",
     "java": ">=21",
     "fabric-api": "*"
   },
   "suggests": {
     "another-mod": "*"
+  },
+  "custom": {
+    "modmenu": {
+      "api": true
+    }
   }
 }

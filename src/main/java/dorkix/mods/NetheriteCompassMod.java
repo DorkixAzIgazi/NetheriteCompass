@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dorkix.mods.components.DebrisTrackingComponent;
+import dorkix.mods.config.ModConfig;
 import dorkix.mods.netherite_compass.Constants;
 import dorkix.mods.netherite_compass.item.NetheriteCompass;
 import net.fabricmc.api.ModInitializer;
@@ -24,6 +25,7 @@ import net.minecraft.util.Rarity;
 
 public class NetheriteCompassMod implements ModInitializer {
 	public static final Logger LOGGER = LoggerFactory.getLogger(Constants.MODID);
+	public static ModConfig config;
 
 	public static final ComponentType<DebrisTrackingComponent> DEBRIS_TRACKING_COMPONENT = Registry.register(
 			Registries.DATA_COMPONENT_TYPE,
@@ -47,6 +49,8 @@ public class NetheriteCompassMod implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
+		config = ModConfig.load();
+		LOGGER.info("Netherite Compass Chunk Search Radius: " + config.chunkRadius);
 
 		Registry.register(Registries.ITEM, NETHERITE_COMPASS_KEY, NETHERITE_COMPASS);
 
