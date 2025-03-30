@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
+import io.dorkix.netherite_compass.Config;
 import io.dorkix.netherite_compass.DebrisTrackingComponent;
 import io.dorkix.netherite_compass.NetheriteCompass;
 import net.minecraft.ChatFormatting;
@@ -11,21 +12,19 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.NbtUtils;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -86,7 +85,7 @@ public class NetheriteCompassItem extends Item {
         // Get all the blocks in the player's nearby chunks and find the
         // closest Ancient Debris.
 
-        Optional<BlockPos> closest = findAncientDebrisInNearbyChunks(level, entPos, 1);
+        Optional<BlockPos> closest = findAncientDebrisInNearbyChunks(level, entPos, Config.chunkRadius);
         // Play sound if the tracking state changes
         playSoundOnStateChange(level, entity, stack, closest);
 
@@ -136,7 +135,7 @@ public class NetheriteCompassItem extends Item {
     }
 
     /**
-     * @param world       The world to search
+     * @param level       The world to search
      * @param entPos      position of the entity holding the compass
      * @param chunkRadius 0 = only the entity's chunk, 1 = 3x3 chunks around the
      *                    entity, 2 = 5x5 etc...
@@ -238,8 +237,8 @@ public class NetheriteCompassItem extends Item {
     }
 
     @Override
-    public void inventoryTick(ItemStack stack, Level level, Entity entity, int slot, boolean selected) {
-        findAncientDebris(stack, level, entity, false);
+    public void inventoryTick(ItemStack stack, ServerLevel level, Entity player, EquipmentSlot slot) {
+        findAncientDebris(stack, level, player, false);
     }
 
     @Override
@@ -261,4 +260,5 @@ public class NetheriteCompassItem extends Item {
 
         return InteractionResult.SUCCESS.heldItemTransformedTo(stack);
     }
+
 }
