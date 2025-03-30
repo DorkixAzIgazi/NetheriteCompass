@@ -12,10 +12,12 @@ import net.minecraft.block.Blocks;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Style;
@@ -80,7 +82,8 @@ public class NetheriteCompass extends Item {
         // Get all the blocks in the player's nearby chunks and find the closest
         // Ancient Debris.
 
-        Optional<BlockPos> closest = findAncientDebrisInNearbyChunks(world, entPos, 1);
+        Optional<BlockPos> closest = findAncientDebrisInNearbyChunks(world, entPos,
+                NetheriteCompassMod.config.chunkRadius);
         // Play sound if the tracking state changes
         playSoundOnStateChange(world, entity, stack, closest);
 
@@ -245,7 +248,7 @@ public class NetheriteCompass extends Item {
     }
 
     @Override
-    public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected) {
+    public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, EquipmentSlot slot) {
         findAncientDebris(stack, world, entity, false);
     }
 }
