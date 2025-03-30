@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "io.dorkix.netherite_compass.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": ["RangeSelectItemModelPropertiesMixin"],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "refmap": "mixins.netherite_compass.refmap.json"
+}

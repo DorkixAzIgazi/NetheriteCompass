@@ -1,11 +1,11 @@
 package io.dorkix.netherite_compass;
 
+import net.minecraftforge.fml.config.ModConfig;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
 
 import io.dorkix.netherite_compass.items.NetheriteCompassItem;
-import net.minecraft.client.renderer.item.properties.numeric.RangeSelectItemModelProperties;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -17,7 +17,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -62,15 +61,10 @@ public class NetheriteCompass {
                                         }).build());
 
         public NetheriteCompass(FMLJavaModLoadingContext context) {
+                context.registerConfig(ModConfig.Type.CLIENT, Config.SPEC);
                 IEventBus modEventBus = context.getModEventBus();
-                modEventBus.addListener(this::clientSetup);
                 REGISTER.register(modEventBus);
                 ITEMS.register(modEventBus);
                 CREATIVE_MODE_TABS.register(modEventBus);
-        }
-
-        private void clientSetup(final FMLClientSetupEvent event) {
-                RangeSelectItemModelProperties.ID_MAPPER.put(ResourceLocation.fromNamespaceAndPath(MODID, MODID),
-                                NetheriteCompassProperty.CODEC);
         }
 }
