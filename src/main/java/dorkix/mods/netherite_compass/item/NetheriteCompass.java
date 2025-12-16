@@ -48,7 +48,7 @@ public class NetheriteCompass extends Item {
     }
 
     private static Optional<BlockPos> findAncientDebris(ItemStack stack, World world, Entity entity, boolean force) {
-        if (world.isClient) {
+        if (world.isClient()) {
             return Optional.empty();
         }
         // See if the component data for the item has a tracked position
@@ -70,7 +70,7 @@ public class NetheriteCompass extends Item {
                 // just ignore and don't search again.
                 var dimKey = getTrackedDimension(stack);
                 if (dimKey.isPresent()
-                        && !(dimKey.get() == entity.getWorld().getRegistryKey())) {
+                        && !(dimKey.get() == entity.getEntityWorld().getRegistryKey())) {
                     return Optional.empty();
                 }
             }
@@ -186,7 +186,7 @@ public class NetheriteCompass extends Item {
     @Override
     public ActionResult use(World world, PlayerEntity user, Hand hand) {
         var stack = user.getStackInHand(hand);
-        if (world.isClient) {
+        if (world.isClient()) {
             return ActionResult.PASS;
         }
         if (!stack.isOf(NetheriteCompassMod.NETHERITE_COMPASS)) {
@@ -287,8 +287,8 @@ public class NetheriteCompass extends Item {
     public boolean allowComponentsUpdateAnimation(PlayerEntity player, Hand hand, ItemStack oldStack,
             ItemStack newStack) {
         // Update tooltip when switching to a new compass stack
-        if (!newStack.isEmpty() && player.getWorld() != null) {
-            setTooltip(newStack, player.getWorld(), player);
+        if (!newStack.isEmpty() && player.getEntityWorld() != null) {
+            setTooltip(newStack, player.getEntityWorld(), player);
         }
         return super.allowComponentsUpdateAnimation(player, hand, oldStack, newStack);
     }
