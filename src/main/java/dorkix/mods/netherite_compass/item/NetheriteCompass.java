@@ -53,7 +53,6 @@ public class NetheriteCompass extends Item {
         }
         // See if the component data for the item has a tracked position
         var trackedPos = getTrackedPos(stack);
-        setTooltip(stack, world);
         if (!force && trackedPos != null) {
             // If its not a forced search triggered by the use of the compass then check if
             // the position from the component still contains the Ancient Debris Block.
@@ -69,7 +68,6 @@ public class NetheriteCompass extends Item {
                 // Check if the tracked pos is in the same dimension as the entity holding the
                 // compass. trackedEntity might be null because of this. If this is the case
                 // just ignore and don't search again.
-                setTooltip(stack, world);
                 var dimKey = getTrackedDimension(stack);
                 if (dimKey.isPresent()
                         && !(dimKey.get() == entity.getWorld().getRegistryKey())) {
@@ -90,7 +88,12 @@ public class NetheriteCompass extends Item {
         // Save the result into the item's component data. writeComponent will handle
         // the case if no Ancient Debris has been found.
         writeComponent(stack, world.getRegistryKey(), closest);
-        setTooltip(stack, world);
+
+        // Only update tooltip when force is true (triggered by right-click search)
+        if (force) {
+            setTooltip(stack, world, entity);
+        }
+
         return closest;
     }
 
@@ -200,7 +203,7 @@ public class NetheriteCompass extends Item {
         return ActionResult.SUCCESS.withNewHandStack(stack);
     }
 
-    public static void setTooltip(ItemStack itemStack, World world) {
+    public static void setTooltip(ItemStack itemStack, World world, Entity entity) {
         var trackingComponent = itemStack.getOrDefault(NetheriteCompassMod.DEBRIS_TRACKING_COMPONENT,
                 DebrisTrackingComponent.DEFAULT);
         if (getTrackedPos(itemStack) != null) {
@@ -212,7 +215,7 @@ public class NetheriteCompass extends Item {
                 setWrongDimensionLore(itemStack);
             } else {
                 // Tracked nearby
-                setLockedOnLore(itemStack);
+                setLockedOnLore(itemStack, entity);
             }
         } else if (!trackingComponent.isTracking()) {
             setLocatingLore(itemStack);
@@ -234,7 +237,27 @@ public class NetheriteCompass extends Item {
                                         Style.EMPTY.withItalic(false).withBold(true).withColor(Formatting.DARK_RED)))));
     }
 
-    public static void setLockedOnLore(ItemStack stack) {
+    public static void setLockedOnLore(ItemStack stack, Entity entity) {
+        if (entity instanceof PlayerEntity player) {
+            var trackedPos = getTrackedPos(stack);
+            if (trackedPos != null) {
+                double distance = Math.sqrt(player.getBlockPos().getSquaredDistance(trackedPos.pos()));
+                int roundedDistance = (int) Math.ceil(distance);
+                String distanceKey = roundedDistance == 1
+                        ? "item.netherite_compass.netherite_compass.distance.single"
+                        : "item.netherite_compass.netherite_compass.distance.multiple";
+                stack.set(DataComponentTypes.LORE,
+                        new LoreComponent(
+                                List.of(getHintText(),
+                                        Text.translatable("item.netherite_compass.netherite_compass.locked_on")
+                                                .setStyle(Style.EMPTY.withItalic(false).withBold(false)
+                                                        .withColor(Formatting.RED)),
+                                        Text.translatable(distanceKey, roundedDistance)
+                                                .setStyle(Style.EMPTY.withItalic(false).withBold(false)
+                                                        .withColor(Formatting.DARK_GRAY)))));
+                return;
+            }
+        }
         stack.set(DataComponentTypes.LORE,
                 new LoreComponent(
                         List.of(getHintText(), Text.translatable("item.netherite_compass.netherite_compass.locked_on")
@@ -250,5 +273,23 @@ public class NetheriteCompass extends Item {
     @Override
     public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, EquipmentSlot slot) {
         findAncientDebris(stack, world, entity, false);
+
+        // Update tooltip when player has inventory open and compass is not in their
+        // hand
+        if (entity instanceof PlayerEntity player &&
+                (slot != EquipmentSlot.MAINHAND && slot != EquipmentSlot.OFFHAND) &&
+                player.currentScreenHandler == player.playerScreenHandler) {
+            setTooltip(stack, world, entity);
+        }
+    }
+
+    @Override
+    public boolean allowComponentsUpdateAnimation(PlayerEntity player, Hand hand, ItemStack oldStack,
+            ItemStack newStack) {
+        // Update tooltip when switching to a new compass stack
+        if (!newStack.isEmpty() && player.getWorld() != null) {
+            setTooltip(newStack, player.getWorld(), player);
+        }
+        return super.allowComponentsUpdateAnimation(player, hand, oldStack, newStack);
     }
 }
