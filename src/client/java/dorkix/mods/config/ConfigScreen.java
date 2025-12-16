@@ -28,9 +28,11 @@ public class ConfigScreen extends Screen {
     int panelWidth = 400; // Adjust this value to make it wider or narrower
 
     // Label
+    Text labelText = Text.literal("Chunk search radius");
+    int labelWidth = this.textRenderer.getWidth(labelText);
     this.addDrawableChild(
-        new TextWidget(centerX - panelWidth / 2 + 20, centerY - 50, panelWidth - 40, 20,
-            Text.literal("Chunk search radius"), this.textRenderer));
+        new TextWidget(centerX - labelWidth / 2, centerY - 50, labelWidth, 20,
+            labelText, this.textRenderer));
 
     // Slider for chunk radius
     chunkRadiusSlider = new SliderWidget(centerX - panelWidth / 2 + 20, centerY - 20, panelWidth - 40, 20,
@@ -45,21 +47,29 @@ public class ConfigScreen extends Screen {
       @Override
       protected void applyValue() {
         currentRadius = (int) Math.round(this.value * 15) + 1;
-        areaLabel.setMessage(getAreaText(currentRadius));
+        Text newAreaText = getAreaText(currentRadius);
+        int newAreaWidth = ConfigScreen.this.textRenderer.getWidth(newAreaText);
+        areaLabel.setX(ConfigScreen.this.width / 2 - newAreaWidth / 2);
+        areaLabel.setWidth(newAreaWidth);
+        areaLabel.setMessage(newAreaText);
         warningLabel.visible = currentRadius > 8;
       }
     };
     this.addDrawableChild(chunkRadiusSlider);
 
     // Area display label
-    areaLabel = new TextWidget(centerX - panelWidth / 2 + 20, centerY + 5, panelWidth - 40, 20,
-        getAreaText(NetheriteCompassMod.config.chunkRadius),
+    Text areaText = getAreaText(NetheriteCompassMod.config.chunkRadius);
+    int areaWidth = this.textRenderer.getWidth(areaText);
+    areaLabel = new TextWidget(centerX - areaWidth / 2, centerY + 5, areaWidth, 20,
+        areaText,
         this.textRenderer);
     this.addDrawableChild(areaLabel);
 
     // Warning label for large values
-    warningLabel = new TextWidget(centerX - panelWidth / 2 + 20, centerY + 25, panelWidth - 40, 20,
-        Text.literal("Large values may slow down the game!").styled(style -> style.withColor(0xFF5555)),
+    Text warningText = Text.literal("Large values may slow down the game!").styled(style -> style.withColor(0xFF5555));
+    int warningWidth = this.textRenderer.getWidth(warningText);
+    warningLabel = new TextWidget(centerX - warningWidth / 2, centerY + 25, warningWidth, 20,
+        warningText,
         this.textRenderer);
     warningLabel.visible = NetheriteCompassMod.config.chunkRadius > 8;
     this.addDrawableChild(warningLabel);
@@ -87,7 +97,7 @@ public class ConfigScreen extends Screen {
 
     // Draw background panel
     context.fill(centerX - panelWidth / 2, centerY - 80, centerX + panelWidth / 2, centerY + 80, 0xC0101010);
-    context.drawBorder(centerX - panelWidth / 2, centerY - 80, panelWidth, panelHeight, 0xFF8B8B8B);
+    context.drawStrokedRectangle(centerX - panelWidth / 2, centerY - 80, panelWidth, panelHeight, 0xFF8B8B8B);
 
     super.render(context, mouseX, mouseY, delta);
   }

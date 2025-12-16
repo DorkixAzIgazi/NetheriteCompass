@@ -6,8 +6,8 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.render.item.property.numeric.NumericProperty;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.HeldItemContext;
 
 @Environment(EnvType.CLIENT)
 public class NetheriteCompassProperty implements NumericProperty {
@@ -25,8 +25,8 @@ public class NetheriteCompassProperty implements NumericProperty {
   }
 
   @Override
-  public float getValue(ItemStack stack, ClientWorld world, LivingEntity holder, int seed) {
-    return this.state.getValue(stack, world, holder, seed);
+  public float getValue(ItemStack stack, ClientWorld world, HeldItemContext context, int seed) {
+    return this.state.getValue(stack, world, context, seed);
   }
 
   @Override

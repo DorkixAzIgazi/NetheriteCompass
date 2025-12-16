@@ -15,6 +15,7 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.HeldItemContext;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.GlobalPos;
 import net.minecraft.util.math.MathHelper;
@@ -39,13 +40,18 @@ public class NetheriteCompassState extends NeedleAngleState {
   }
 
   @Override
-  protected float getAngle(ItemStack stack, ClientWorld world, int seed, Entity user) {
+  protected float getAngle(ItemStack stack, ClientWorld world, int seed, @Nullable HeldItemContext context) {
     var isTracking = stack.getOrDefault(NetheriteCompassMod.DEBRIS_TRACKING_COMPONENT,
         DebrisTrackingComponent.DEFAULT).isTracking();
     long time = world.getTime();
 
     if (!isTracking) {
       return getSpinningAngle(time);
+    }
+
+    Entity user = context != null ? context.getEntity() : null;
+    if (user == null) {
+      return this.getAimlessAngle(seed, time);
     }
 
     GlobalPos globalPos = NetheriteCompass.getTrackedPos(stack);
@@ -71,7 +77,7 @@ public class NetheriteCompassState extends NeedleAngleState {
     float f = (float) getAngleTo(entity, pos);
     float g = getBodyYaw(entity);
     if (entity instanceof PlayerEntity playerEntity && playerEntity.isMainPlayer()
-        && playerEntity.getWorld().getTickManager().shouldTick()) {
+        && playerEntity.getEntityWorld().getTickManager().shouldTick()) {
       if (this.aimedAngler.shouldUpdate(time)) {
         this.aimedAngler.update(time, 0.5F - (g - 0.25F));
       }
@@ -85,8 +91,8 @@ public class NetheriteCompassState extends NeedleAngleState {
   }
 
   private static boolean canPointTo(Entity entity, @Nullable GlobalPos pos) {
-    return pos != null && pos.dimension() == entity.getWorld().getRegistryKey()
-        && !(pos.pos().getSquaredDistance(entity.getPos()) < 1.0E-5F);
+    return pos != null && pos.dimension() == entity.getEntityWorld().getRegistryKey()
+        && !(pos.pos().getSquaredDistance(entity.getEntityPos()) < 1.0E-5F);
   }
 
   private static double getAngleTo(Entity entity, BlockPos pos) {
