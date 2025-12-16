@@ -11,6 +11,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.component.ComponentType;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.Item;
 import net.minecraft.item.Item.Settings;
 import net.minecraft.item.ItemGroup;
@@ -37,6 +38,9 @@ public class NetheriteCompassMod implements ModInitializer {
 
 	public static final Item NETHERITE_COMPASS = new NetheriteCompass(
 			new Settings().rarity(Rarity.EPIC).fireproof().maxCount(1).registryKey(NETHERITE_COMPASS_KEY)
+					.component(DataComponentTypes.CUSTOM_NAME,
+							Text.translatable("item.netherite_compass.netherite_compass")
+									.styled(style -> style.withColor(0xFF4100).withItalic(false)))
 					.component(DEBRIS_TRACKING_COMPONENT, DebrisTrackingComponent.DEFAULT));
 
 	public static final RegistryKey<ItemGroup> NETHERITE_COMPASS_GROUP_KEY = RegistryKey.of(

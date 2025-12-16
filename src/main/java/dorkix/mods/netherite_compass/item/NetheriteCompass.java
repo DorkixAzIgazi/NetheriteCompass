@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Nullable;
 
 import dorkix.mods.NetheriteCompassMod;
 import dorkix.mods.components.DebrisTrackingComponent;
+import dorkix.mods.netherite_compass.Constants;
 import net.minecraft.block.Blocks;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LoreComponent;
@@ -25,6 +26,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.GlobalPos;
 import net.minecraft.world.World;
@@ -127,6 +129,7 @@ public class NetheriteCompass extends Item {
             itemStack.set(NetheriteCompassMod.DEBRIS_TRACKING_COMPONENT,
                     DebrisTrackingComponent.DEFAULT);
         }
+        itemStack.set(DataComponentTypes.TOOLTIP_STYLE, Identifier.of(Constants.MODID, "compass"));
     }
 
     private static void playSound(World world, Entity entity, boolean success) {
