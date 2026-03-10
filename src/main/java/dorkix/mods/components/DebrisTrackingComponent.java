@@ -5,7 +5,7 @@ import java.util.Optional;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import net.minecraft.util.math.GlobalPos;
+import net.minecraft.core.GlobalPos;
 
 public record DebrisTrackingComponent(boolean isTracking, Optional<GlobalPos> target) {
   public static final Codec<DebrisTrackingComponent> CODEC = RecordCodecBuilder.create(builder -> {

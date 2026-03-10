@@ -4,13 +4,13 @@ import com.mojang.serialization.MapCodec;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.render.item.property.numeric.NumericProperty;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.HeldItemContext;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.item.properties.numeric.RangeSelectItemModelProperty;
+import net.minecraft.world.entity.ItemOwner;
+import net.minecraft.world.item.ItemStack;
 
 @Environment(EnvType.CLIENT)
-public class NetheriteCompassProperty implements NumericProperty {
+public class NetheriteCompassProperty implements RangeSelectItemModelProperty {
   public static final MapCodec<NetheriteCompassProperty> CODEC = NetheriteCompassState.CODEC.xmap(
       NetheriteCompassProperty::new,
       property -> property.state);
@@ -25,12 +25,12 @@ public class NetheriteCompassProperty implements NumericProperty {
   }
 
   @Override
-  public float getValue(ItemStack stack, ClientWorld world, HeldItemContext context, int seed) {
-    return this.state.getValue(stack, world, context, seed);
+  public float get(ItemStack stack, ClientLevel world, ItemOwner context, int seed) {
+    return this.state.get(stack, world, context, seed);
   }
 
   @Override
-  public MapCodec<NetheriteCompassProperty> getCodec() {
+  public MapCodec<NetheriteCompassProperty> type() {
     return CODEC;
   }
 }
