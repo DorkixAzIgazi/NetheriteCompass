@@ -5,11 +5,11 @@ import java.util.List;
 import net.fabricmc.fabric.api.client.datagen.v1.provider.FabricModelProvider;
 import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
-import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
-import net.minecraft.client.data.BlockStateModelGenerator;
-import net.minecraft.client.data.ItemModelGenerator;
-import net.minecraft.client.data.ItemModels;
-import net.minecraft.client.render.item.model.RangeDispatchItemModel;
+import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
+import net.minecraft.client.data.models.BlockModelGenerators;
+import net.minecraft.client.data.models.ItemModelGenerators;
+import net.minecraft.client.data.models.model.ItemModelUtils;
+import net.minecraft.client.renderer.item.RangeSelectItemModel;
 
 public class NetheriteCompassModDataGenerator implements DataGeneratorEntrypoint {
 	@Override
@@ -20,21 +20,21 @@ public class NetheriteCompassModDataGenerator implements DataGeneratorEntrypoint
 }
 
 class NetheriteCompassModelGenerator extends FabricModelProvider {
-	public NetheriteCompassModelGenerator(FabricDataOutput generator) {
+	public NetheriteCompassModelGenerator(FabricPackOutput generator) {
 		super(generator);
 	}
 
 	@Override
-	public void generateItemModels(ItemModelGenerator itemModelGenerator) {
-		List<RangeDispatchItemModel.Entry> list = itemModelGenerator
-				.createCompassRangeDispatchEntries(NetheriteCompassMod.NETHERITE_COMPASS);
-		itemModelGenerator.output
+	public void generateItemModels(ItemModelGenerators itemModelGenerator) {
+		List<RangeSelectItemModel.Entry> list = itemModelGenerator
+				.createCompassModels(NetheriteCompassMod.NETHERITE_COMPASS);
+		itemModelGenerator.itemModelOutput
 				.accept(
 						NetheriteCompassMod.NETHERITE_COMPASS,
-						ItemModels.rangeDispatch(new NetheriteCompassProperty(true), 32.0F, list));
+						ItemModelUtils.rangeSelect(new NetheriteCompassProperty(true), 32.0F, list));
 	}
 
 	@Override
-	public void generateBlockStateModels(BlockStateModelGenerator blockStateModelGenerator) {
+	public void generateBlockStateModels(BlockModelGenerators blockStateModelGenerator) {
 	}
 }
