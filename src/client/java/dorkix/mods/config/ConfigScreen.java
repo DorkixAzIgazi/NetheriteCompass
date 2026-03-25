@@ -1,7 +1,7 @@
 package dorkix.mods.config;
 
 import dorkix.mods.NetheriteCompassMod;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.StringWidget;
@@ -90,7 +90,7 @@ public class ConfigScreen extends Screen {
   }
 
   @Override
-  public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+  public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
     int centerX = this.width / 2;
     int centerY = this.height / 2;
     int panelWidth = 400;
@@ -98,9 +98,9 @@ public class ConfigScreen extends Screen {
 
     // Draw background panel
     context.fill(centerX - panelWidth / 2, centerY - 80, centerX + panelWidth / 2, centerY + 80, 0xC0101010);
-    context.renderOutline(centerX - panelWidth / 2, centerY - 80, panelWidth, panelHeight, 0xFF8B8B8B);
+    context.outline(centerX - panelWidth / 2, centerY - 80, panelWidth, panelHeight, 0xFF8B8B8B);
 
-    super.render(context, mouseX, mouseY, delta);
+    super.extractRenderState(context, mouseX, mouseY, delta);
   }
 
   private Component getAreaText(int radius) {

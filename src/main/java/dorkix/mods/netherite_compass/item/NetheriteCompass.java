@@ -152,8 +152,8 @@ public class NetheriteCompass extends Item {
         HashSet<BlockPos> blocks = new HashSet<>();
         var chunkPos = world.getChunkAt(entPos).getPos();
 
-        for (int x = chunkPos.x - chunkRadius; x <= chunkPos.x + chunkRadius; x++) {
-            for (int z = chunkPos.z - chunkRadius; z <= chunkPos.z + chunkRadius; z++) {
+        for (int x = chunkPos.x() - chunkRadius; x <= chunkPos.x() + chunkRadius; x++) {
+            for (int z = chunkPos.z() - chunkRadius; z <= chunkPos.z() + chunkRadius; z++) {
                 world.getChunk(x, z).findBlocks(
                         blockState -> blockState.getBlock() == Blocks.ANCIENT_DEBRIS,
                         (pos, blockState) -> {

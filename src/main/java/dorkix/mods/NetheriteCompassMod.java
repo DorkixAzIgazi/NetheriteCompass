@@ -8,8 +8,7 @@ import dorkix.mods.config.ModConfig;
 import dorkix.mods.netherite_compass.Constants;
 import dorkix.mods.netherite_compass.item.NetheriteCompass;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
@@ -22,6 +21,7 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.CreativeModeTab.Row;
 
 public class NetheriteCompassMod implements ModInitializer {
 	public static final Logger LOGGER = LoggerFactory.getLogger(Constants.MODID);
@@ -45,9 +45,10 @@ public class NetheriteCompassMod implements ModInitializer {
 	public static final ResourceKey<CreativeModeTab> NETHERITE_COMPASS_GROUP_KEY = ResourceKey.create(
 			Registries.CREATIVE_MODE_TAB, Identifier.fromNamespaceAndPath(Constants.MODID, "item_group"));
 
-	public static final CreativeModeTab NETHERITE_COMPASS_GROUP = FabricItemGroup.builder()
+	public static final CreativeModeTab NETHERITE_COMPASS_GROUP = CreativeModeTab.builder(Row.TOP, 0)
 			.icon(() -> new ItemStack(NETHERITE_COMPASS))
 			.title(Component.translatable("item.netherite_compass.netherite_compass"))
+			.displayItems((params, output) -> output.accept(NETHERITE_COMPASS))
 			.build();
 
 	@Override
@@ -58,9 +59,5 @@ public class NetheriteCompassMod implements ModInitializer {
 		Registry.register(BuiltInRegistries.ITEM, NETHERITE_COMPASS_KEY, NETHERITE_COMPASS);
 
 		Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, NETHERITE_COMPASS_GROUP_KEY, NETHERITE_COMPASS_GROUP);
-
-		ItemGroupEvents.modifyEntriesEvent(NETHERITE_COMPASS_GROUP_KEY).register(content -> {
-			content.accept(NETHERITE_COMPASS);
-		});
 	}
 }
