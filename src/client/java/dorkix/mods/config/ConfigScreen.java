@@ -79,12 +79,12 @@ public class ConfigScreen extends Screen {
     this.addRenderableWidget(Button.builder(Component.literal("Save"), button -> {
       NetheriteCompassMod.config.chunkRadius = Math.clamp(currentRadius, 1, 16);
       NetheriteCompassMod.config.save();
-      this.minecraft.setScreen(parent);
+      this.minecraft.gui.setScreen(parent);
     }).bounds(centerX + 5, centerY + 50, 100, 20).build());
 
     // Cancel Button
     this.addRenderableWidget(Button.builder(Component.literal("Cancel"), button -> {
-      this.minecraft.setScreen(parent);
+      this.minecraft.gui.setScreen(parent);
     }).bounds(centerX - 105, centerY + 50, 100, 20).build());
 
   }
